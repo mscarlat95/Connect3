@@ -17,19 +17,35 @@ import com.scarlat.marius.connect3.R;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    private GridLayout gridLayout;
+    private LinearLayout linearLayout;
+    private TextView winnerMessage;
+    private ImageView currentCell;
+
+    private boolean firstContact;
     Game game = new Game();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_main);
-        initialize();
+
+        firstContact = true;
+        initializeActivity();
     }
 
-    private void initialize() {
+    private void initializeActivity() {
+
+        if (firstContact) {
+            gridLayout = (GridLayout) findViewById(R.id.gridLayout);
+            winnerMessage = (TextView) findViewById(R.id.winnerMessage);
+            linearLayout  = (LinearLayout) findViewById(R.id.playAgainLayout);
+            firstContact = false;
+        }
+
         game.initialize();
-        LinearLayout linearLayout  = (LinearLayout) findViewById(R.id.playAgainLayout);
         linearLayout.setVisibility(View.INVISIBLE);
     }
 
@@ -38,11 +54,10 @@ public class MainActivity extends AppCompatActivity {
         if (!game.isActiveGame()) {
             return;
         }
-
-        ImageView counter = (ImageView) view;
-        int tagNumber;
+        currentCell = (ImageView) view;
 
         // get current index in the gameState
+        int tagNumber;
         try {
             tagNumber = Integer.parseInt(view.getTag().toString());
             Log.d(TAG, "dropIn: Current cell = (" + tagNumber / 3 + ", " + tagNumber % 3 + ")");
@@ -53,46 +68,48 @@ public class MainActivity extends AppCompatActivity {
 
         // update only unset cells
         if (game.getGameState()[tagNumber] == 2) {
-            game.updateGameState(tagNumber, game.getActivePlayer().getId());
-            animateCell(counter);
-            game.changePlayer();
-        }
-
-        String message = game.checkState();
-        if (!message.equals("")) {
-            displayWinningLayout(message);
-            game.setActiveGame(false);
+            updateCellContent(tagNumber);
         }
     }
 
     public void playAgain(View view) {
-        initialize();
+        initializeActivity();
         clearTable();
     }
 
-    private void animateCell(ImageView counter) {
+    private void updateCellContent(int tagNumber) {
+        game.updateGameState(tagNumber, game.getActivePlayer().getId());
+        animateCell();
+
+        String message = game.checkState();
+
+        if (!message.equals("")) {  /* Winning or DRAW */
+            displayWinningLayout(message);
+            game.setActiveGame(false);
+        }
+        game.changePlayer();
+    }
+
+    private void animateCell() {
 
         float translateY = 1000f, rotationAngle = 360f;
         int animationDuration = 300;
 
-        // Animate the translation and update player
-        counter.setTranslationY(-translateY);
+        // Animate the cell and update player
+        currentCell.setTranslationY(-translateY);
         if (game.getActivePlayer().getId() == 0) {
-            counter.setImageResource(R.drawable.yellow);
+            currentCell.setImageResource(R.drawable.yellow);
         } else {
-            counter.setImageResource(R.drawable.red);
+            currentCell.setImageResource(R.drawable.red);
         }
-        counter.animate()
+        currentCell.animate()
                 .translationYBy(translateY)
                 .rotationBy(rotationAngle)
                 .setDuration(animationDuration);
     }
 
     private void displayWinningLayout(String message) {
-        TextView winnerMessage = (TextView) findViewById(R.id.winnerMessage);
         winnerMessage.setText(message);
-
-        LinearLayout linearLayout  = (LinearLayout) findViewById(R.id.playAgainLayout);
         if (game.getActivePlayer().getId() == 0) {
             linearLayout.setBackgroundColor(Color.rgb(255, 247, 117));
         } else {
@@ -103,10 +120,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void clearTable() {
-        GridLayout layout = (GridLayout) findViewById(R.id.gridLayout);
-
-        for (int i = 0; i < layout.getChildCount(); ++i) {
-            View v = layout.getChildAt(i);
+        for (int i = 0; i < gridLayout.getChildCount(); ++i) {
+            View v = gridLayout.getChildAt(i);
             if (v instanceof ImageView) {
                 ((ImageView) v).setImageResource(0);
             }

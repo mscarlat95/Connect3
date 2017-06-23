@@ -40,7 +40,7 @@ public class Game {
 
     private boolean checkWinning() {
         for (int[] winningPos : winningPositions) {
-            if (    gameState[winningPos[0]]  == gameState[winningPos[1]] &&
+            if (    gameState[winningPos[0]] == gameState[winningPos[1]] &&
                     gameState[winningPos[1]] == gameState[winningPos[2]] &&
                     gameState[winningPos[0]] != 2) {
                 return true;
@@ -79,7 +79,6 @@ public class Game {
     public String checkState() {
         String message = "";
         if (checkWinning()) {
-            changePlayer();
             message = getActivePlayer().getName() + " has won!";
         } else if (checkDraw()) {
             message = "DRAW";
