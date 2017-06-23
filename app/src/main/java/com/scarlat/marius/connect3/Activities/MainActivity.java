@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.scarlat.marius.connect3.GameDesign.Game;
+import com.scarlat.marius.connect3.GameDesign.Player;
 import com.scarlat.marius.connect3.R;
 
 public class MainActivity extends AppCompatActivity {
@@ -24,7 +25,6 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean firstContact;
     Game game = new Game();
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
         if (firstContact) {
             gridLayout = (GridLayout) findViewById(R.id.gridLayout);
             winnerMessage = (TextView) findViewById(R.id.winnerMessage);
-            linearLayout  = (LinearLayout) findViewById(R.id.playAgainLayout);
+            linearLayout = (LinearLayout) findViewById(R.id.playAgainLayout);
             firstContact = false;
         }
 
@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         }
         currentCell = (ImageView) view;
 
-        // get current index in the gameState
+        // get current index in the game table
         int tagNumber;
         try {
             tagNumber = Integer.parseInt(view.getTag().toString());
@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // update only unset cells
-        if (game.getGameState()[tagNumber] == 2) {
+        if (game.getCell()[tagNumber] == 2) {
             updateCellContent(tagNumber);
         }
     }
@@ -81,13 +81,14 @@ public class MainActivity extends AppCompatActivity {
         game.updateGameState(tagNumber, game.getActivePlayer().getId());
         animateCell();
 
-        String message = game.checkState();
+        String message = game.getGameState();
 
         if (!message.equals("")) {  /* Winning or DRAW */
             displayWinningLayout(message);
             game.setActiveGame(false);
+        } else {
+            game.changePlayer();
         }
-        game.changePlayer();
     }
 
     private void animateCell() {
@@ -110,11 +111,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void displayWinningLayout(String message) {
         winnerMessage.setText(message);
-        if (game.getActivePlayer().getId() == 0) {
-            linearLayout.setBackgroundColor(Color.rgb(255, 247, 117));
-        } else {
-            linearLayout.setBackgroundColor(Color.rgb(254, 99, 104));
+
+        int color = Color.rgb(145, 221, 237);
+        Player winner = game.getWinner();
+
+        if (winner != null) {
+            color = winner.getColor();
         }
+
+        linearLayout.setBackgroundColor(color);
         linearLayout.setAlpha(0.85f);
         linearLayout.setVisibility(View.VISIBLE);
     }
