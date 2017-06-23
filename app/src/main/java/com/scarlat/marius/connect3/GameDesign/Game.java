@@ -58,7 +58,7 @@ public class Game {
             firstContact = false;
         } else {
 
-            // mark all cells as being unset
+            // mark all cells as being empty
             for (int i = 0; i < 9; ++i) {
                 cell[i] = 2;
             }
